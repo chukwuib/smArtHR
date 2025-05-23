@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}HR Dashboard{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>HR Dashboard</h2>
+    <a href="{{ url_for('create_job') }}" class="btn btn-success">Create New Job</a>
+  </div>
+  <p>Welcome, {{ current_user.username }}!</p>
+  
+  <hr>
+  <h3>Job Postings</h3>
+  {% if jobs and jobs|length > 0 %}
+    <ul class="list-group mb-4">
+      {% for job in jobs %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <h5>{{ job.job_title }} ({{ job.level }})</h5>
+            <small>Created on: {{ job.creation_date.strftime('%Y-%m-%d') }}</small>
+          </div>
+          <a href="{{ url_for('create_application_link', job_id=job.id) }}" class="btn btn-primary btn-sm">Generate Application Link</a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No job postings found. <a href="{{ url_for('create_job') }}">Create one now!</a></p>
+  {% endif %}
+
+  <hr>
+  <h3>Candidate Applications</h3>
+  {% if applications and applications|length > 0 %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Candidate</th>
+          <th>Job Title</th>
+          <th>Submitted On</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+          <tr>
+            <td>{{ app.candidate.name if app.candidate and app.candidate.name else 'N/A' }}</td>
+            <td>{{ app.job.job_title if app.job else 'N/A' }}</td>
+            <td>{{ app.submission_date.strftime('%Y-%m-%d %H:%M') if app.submission_date else 'N/A' }}</td>
+            <td>
+              <span class="badge 
+                {% if app.status == 'Pending' %}badge-secondary
+                {% elif app.status == 'Submitted' %}badge-warning
+                {% elif app.status == 'Graded' %}badge-success
+                {% else %}badge-light
+                {% endif %}">
+                {{ app.status }}
+              </span>
+            </td>
+            <td>
+              <a href="{{ url_for('view_application', application_id=app.id) }}" class="btn btn-outline-primary btn-sm mr-1">View Details</a>
+              {% if app.status == 'Submitted' %}
+                <a href="{{ url_for('grade_application_route', application_id=app.id) }}" class="btn btn-info btn-sm">Grade Application</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No candidate applications found.</p>
+  {% endif %}
+{% endblock %}

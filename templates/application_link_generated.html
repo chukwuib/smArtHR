@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Application Link Generated{% endblock %}
+
+{% block content %}
+  <h2>Application Link Generated for {{ job.job_title }}</h2>
+  <p>Share the following link with potential candidates:</p>
+  <div class="alert alert-success">
+    <a href="{{ application_url }}" target="_blank">{{ application_url }}</a>
+  </div>
+  <p>
+    <a href="{{ url_for('hr_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+  </p>
+{% endblock %}

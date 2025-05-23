@@ -1,0 +1,16 @@
+{% extends "base.html" %} {# Assuming you have a base.html #}
+{% block title %}Application Submitted{% endblock %}
+
+{% block content %}
+  <h2>{{ message | default('Thank You!') }}</h2>
+  
+  {% if job_title %}
+    <p>Your application for the position of <strong>{{ job_title }}</strong> has been successfully submitted.</p>
+  {% else %}
+    <p>Your submission was successful.</p>
+  {% endif %}
+  
+  <p>We appreciate your interest and will be in touch if your qualifications meet our needs.</p>
+  
+  <p><a href="{{ url_for('home') }}">Return to Home Page</a></p> {# Or another relevant link #}
+{% endblock %}

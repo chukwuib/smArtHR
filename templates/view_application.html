@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}View Application: {{ candidate.name if candidate else 'N/A' }} for {{ job.job_title }}{% endblock %}
+
+{% block content %}
+  <div class="container mt-4">
+    <h2>Application Details</h2>
+    <hr>
+
+    <div class="row">
+      <div class="col-md-6">
+        <h4>Candidate Information</h4>
+        <p><strong>Name:</strong> {{ candidate.name if candidate and candidate.name else 'N/A' }}</p>
+        <p><strong>Email:</strong> {{ candidate.email if candidate and candidate.email else 'N/A' }}</p>
+        {% if candidate and candidate.kyc_details %}
+          <p><strong>KYC Details:</strong> {{ candidate.kyc_details }}</p>
+        {% endif %}
+      </div>
+      <div class="col-md-6">
+        <h4>Job Information</h4>
+        <p><strong>Job Title:</strong> {{ job.job_title }}</p>
+        <p><strong>Level:</strong> {{ job.level }}</p>
+        <p><strong>Description:</strong><br>{{ job.description | nl2br }}</p>
+      </div>
+    </div>
+    <hr>
+
+    <h4>Application Status</h4>
+    <p><strong>Status:</strong> <span class="badge badge-{{ 'secondary' if application.status == 'Pending' else 'warning' if application.status == 'Submitted' else 'success' }}">{{ application.status }}</span></p>
+    {% if application.submission_date %}
+      <p><strong>Submitted On:</strong> {{ application.submission_date.strftime('%Y-%m-%d %H:%M:%S UTC') }}</p>
+    {% endif %}
+    <hr>
+
+    <h4>Questions & Answers</h4>
+    {% if questions and questions|length > 0 %}
+      {% for question in questions %}
+        <div class="card mb-3">
+          <div class="card-header">
+            <strong>Q: {{ question.question_text }}</strong> <span class="text-muted">({{ question.question_type }})</span>
+          </div>
+          <div class="card-body">
+            {% set answer = answers_map.get(question.id) %}
+            {% if answer %}
+              <p><strong>Answer:</strong><br>{{ answer.answer_text | nl2br if answer.answer_text else '<em>No answer provided.</em>' }}</p>
+              {% if application.status == 'Graded' %}
+                <p><strong>Score:</strong> 
+                  {% if answer.score is not none %}
+                    <span class="badge badge-info">{{ answer.score }} / 5</span>
+                  {% else %}
+                    <span class="text-muted"><em>Not scored.</em></span>
+                  {% endif %}
+                </p>
+                <p><strong>Feedback:</strong><br>
+                  {% if answer.grading_feedback %}
+                    {{ answer.grading_feedback | nl2br }}
+                  {% else %}
+                    <span class="text-muted"><em>No feedback provided.</em></span>
+                  {% endif %}
+                </p>
+              {% elif application.status == 'Submitted' and not answer.score %}
+                 <p class="text-muted"><em>This answer has not been graded yet.</em></p>
+              {% endif %}
+            {% else %}
+              <p class="text-muted"><em>No answer recorded for this question.</em></p>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No questions associated with this job.</p>
+    {% endif %}
+
+    <div class="mt-4">
+      <a href="{{ url_for('hr_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+      {% if application.status == 'Submitted' %}
+        <a href="{{ url_for('grade_application_route', application_id=application.id) }}" class="btn btn-info ml-2">Grade This Application</a>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

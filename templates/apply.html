@@ -1,0 +1,61 @@
+{% extends "base.html" %} {# Assuming you have a base.html, if not, basic HTML structure is fine #}
+{% block title %}Apply for {{ job.job_title }}{% endblock %}
+
+{% block content %}
+  <h2>Apply for: {{ job.job_title }}</h2>
+  <p><strong>Level:</strong> {{ job.level }}</p>
+  <p><strong>Description:</strong><br>{{ job.description | nl2br }}</p>
+  <hr>
+
+  {% if application.status == 'Submitted' %}
+    <div class="alert alert-info">This application has already been submitted.</div>
+  {% else %}
+    <form method="POST" action="{{ url_for('apply_for_job', token=token) }}">
+      {{ form.hidden_tag() }} {# CSRF token if using Flask-WTF for the main form fields #}
+      
+      <h4>Your Details (KYC)</h4>
+      <div class="form-group">
+        {{ form.name.label(class="form-control-label") }}
+        {% if form.name.errors %}
+          {{ form.name(class="form-control form-control-lg is-invalid") }}
+          <div class="invalid-feedback">
+            {% for error in form.name.errors %}<span>{{ error }}</span>{% endfor %}
+          </div>
+        {% else %}
+          {{ form.name(class="form-control form-control-lg") }}
+        {% endif %}
+      </div>
+      <div class="form-group">
+        {{ form.email.label(class="form-control-label") }}
+        {% if form.email.errors %}
+          {{ form.email(class="form-control form-control-lg is-invalid") }}
+          <div class="invalid-feedback">
+            {% for error in form.email.errors %}<span>{{ error }}</span>{% endfor %}
+          </div>
+        {% else %}
+          {{ form.email(class="form-control form-control-lg") }}
+        {% endif %}
+      </div>
+      <hr>
+
+      <h4>Application Questions</h4>
+      {% if questions %}
+        {% for question in questions %}
+          <div class="form-group">
+            <label for="answer_for_q_{{ question.id }}">{{ question.question_text }} ({{ question.question_type }})</label>
+            <textarea name="answer_for_q_{{ question.id }}" id="answer_for_q_{{ question.id }}" class="form-control" rows="3">{% if request.form %}{{ request.form.get('answer_for_q_' + question.id|string) }}{% endif %}</textarea>
+            {% if question.expected_answer_guideline %}
+              <small class="form-text text-muted">Guideline: {{ question.expected_answer_guideline }}</small>
+            {% endif %}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No specific questions for this job application. Please submit your details.</p>
+      {% endif %}
+      
+      <div class="form-group mt-4">
+        {{ form.submit(class="btn btn-primary btn-lg") }}
+      </div>
+    </form>
+  {% endif %}
+{% endblock %}
